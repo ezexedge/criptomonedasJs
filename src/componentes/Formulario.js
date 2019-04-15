@@ -1,9 +1,14 @@
 import React, { Component } from 'react';
 import axios from 'axios'
+import Error from './Error'
+import Criptomoneda from './Criptomoneda'
 class Formulario extends Component {
 
     state =  {
-  criptomonedas : []
+  criptomonedas : [],
+  moneda: '',
+  criptomoneda: '',
+  error : false
     }
 
     async componentWillMount(){
@@ -15,14 +20,54 @@ class Formulario extends Component {
                 })
             })
     }
+
+    obtenerValor = e =>{
+        const {name,value} = e.target
+        this.setState({
+            [name]: value
+        })
+    }
+    cotizarMoneda = e => {
+        e.preventDefault()
+        
+        const {moneda , criptomoneda} = this.state
+
+        if(moneda === '' || criptomoneda === ''){
+            this.setState({
+                error: true
+            }, ()=>{
+                setTimeout(()=>{
+                    this.setState({
+                        error: false
+                    })
+                },3000)
+            })
+            return
+
+        }
+
+        const cotizacion = {
+            moneda,
+            criptomoneda
+        }
+
+        this.props.cotizarCriptomoneda(cotizacion)
+    }
     
     render() { 
+
+            const mensaje = (this.state.error) ? <Error mensaje="los campos son obligatorios"/> : ""
         return ( 
 
-                    <form>
+                    <form
+                        onSubmit={this.cotizarMoneda}
+                    >
+                    {mensaje}
                         <div className="row">
                             <label>Elige tu Moneda</label>
                             <select
+                                onChange={this.obtenerValor}
+                                name="moneda"
                                 className="u-full-width">
                                     <option value="">Elige tu moneda</option>
                                     <option value="USD">Dolar Estadounidense</option>
@@ -35,8 +80,18 @@ class Formulario extends Component {
                         <div className="row">
                         <div>
                             <label>Elige tu Criptomoneda</label>
-                            <select className="u-full-width">
+                            <select 
+                                onChange={this.obtenerValor}
+
+                            name="criptomoneda"
+                            className="u-full-width">
                                 <option value="">Elige tu moneda</option>
+                                {Object.keys(this.state.criptomonedas).map(key=>(
+                                    <Criptomoneda
+                                    key={key}
+                                    criptomonedas={this.state.criptomonedas[key]}
+                                    />
+                                ))}
                             </select>
                         </div>
                         </div>
